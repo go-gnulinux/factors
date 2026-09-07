@@ -6,8 +6,8 @@ github.com/go-authn/keyfactor v0.1.0 h1:/kLi4sYZTQ+AmYTaEXZ1+dnaIelmjMDI3dQKwvND
 github.com/go-authn/keyfactor v0.1.0/go.mod h1:CeJO2mFsReZRfVwVxFAxKs46WbYOTXEBd8FYlnG/W6Q=
 github.com/go-authn/mfa v0.1.0 h1:fi0n2rppQvaIyeqa0qaNXa04e55OGEtBmsfQNOym4M0=
 github.com/go-authn/mfa v0.1.0/go.mod h1:wPN7SA2sguNCNUjePafkN6BvO9LFc82PRR3bLwboR6I=
-github.com/go-gnulinux/fido v0.1.1 h1:A1FQOrSGWPJtAIrNLbLazujLg68ViZ2BgDTIUMn49zM=
-github.com/go-gnulinux/fido v0.1.1/go.mod h1:zH6t71LOYJ3uZpkFFVSGnOpEsJnNQF2DdkNoyYm7M9Q=
+github.com/go-gnulinux/fido v0.2.0 h1:Ae3pI54dDC2Om8Pjizka67Klniirbs1DbJBxw0mjgJI=
+github.com/go-gnulinux/fido v0.2.0/go.mod h1:zH6t71LOYJ3uZpkFFVSGnOpEsJnNQF2DdkNoyYm7M9Q=
 github.com/x448/float16 v0.8.4 h1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=
 github.com/x448/float16 v0.8.4/go.mod h1:14CWIYCyZA/cWjXOioeEpHeN/83MdbZDRQHoFcYsOfg=
 golang.org/x/crypto v0.56.0 h1:GUh5Ii4J5jtcseSMiRqr1jXCNHoxjeV9Fmekc2oLy6Y=
