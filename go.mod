@@ -6,7 +6,7 @@ require (
 	github.com/go-authn/fido v0.5.0
 	github.com/go-authn/keyfactor v0.1.0
 	github.com/go-authn/mfa v0.1.0
-	github.com/go-gnulinux/fido v0.1.1
+	github.com/go-gnulinux/fido v0.2.0
 )
 
 require (
