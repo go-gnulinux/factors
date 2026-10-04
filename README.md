@@ -11,7 +11,7 @@ Go, `CGO_ENABLED=0`.
 ```go
 r, err := mfa.Verify(ctx, mfa.Policy{Count: 2},
     somethingYouKnow,                              // yours to supply
-    factors.SecurityKey("example.test", credID),   // this
+    factors.SecurityKey("example.test", credID, pubKey),   // this
 )
 ```
 

@@ -25,17 +25,17 @@ func swap(t *testing.T, o func(context.Context) (fido.Transport, error)) {
 // Linux has no standard biometric service, and a factor that worked on one
 // machine in ten would be worse than none.
 func TestTheFactorIsPossession(t *testing.T) {
-	if got := SecurityKey("example.test", nil).Kind(); got != mfa.Possession {
+	if got := SecurityKey("example.test", nil, testKey).Kind(); got != mfa.Possession {
 		t.Errorf("a security key is %v, want possession", got)
 	}
-	if got := VerifiedSecurityKey("example.test", nil, "0000").Kind(); got != mfa.Possession {
+	if got := VerifiedSecurityKey("example.test", nil, testKey, "0000").Kind(); got != mfa.Possession {
 		t.Errorf("a verified key is %v, want possession", got)
 	}
 	// So a two-KIND policy needs something this package does not supply.
 	swap(t, func(context.Context) (fido.Transport, error) { return nil, errors.New("no") })
 	if _, err := mfa.Verify(context.Background(),
 		mfa.Policy{Count: 2, DistinctKinds: true},
-		SecurityKey("a.test", nil), VerifiedSecurityKey("b.test", nil, "0000"),
+		SecurityKey("a.test", nil, testKey), VerifiedSecurityKey("b.test", nil, testKey, "0000"),
 	); err == nil {
 		t.Fatal("two keys satisfied a two-KIND policy")
 	}
@@ -67,10 +67,10 @@ func TestAnUnrecognisedFailureIsPassedThrough(t *testing.T) {
 }
 
 func TestTheFactorsSayWhatTheyAre(t *testing.T) {
-	if got := SecurityKey("a", nil).Name(); got != "your security key" {
+	if got := SecurityKey("a", nil, testKey).Name(); got != "your security key" {
 		t.Errorf("Name() = %q", got)
 	}
-	if got := VerifiedSecurityKey("a", nil, "0000").Name(); got == SecurityKey("a", nil).Name() {
+	if got := VerifiedSecurityKey("a", nil, testKey, "0000").Name(); got == SecurityKey("a", nil, testKey).Name() {
 		t.Error("the verified factor does not say it will ask for a PIN")
 	}
 }
@@ -83,10 +83,30 @@ func TestTheFactorReachesTheOpener(t *testing.T) {
 		called++
 		return nil, errors.New("no key")
 	})
-	if err := SecurityKey("example.test", []byte("c")).Verify(context.Background()); err == nil {
+	if err := SecurityKey("example.test", []byte("c"), testKey).Verify(context.Background()); err == nil {
 		t.Fatal("a factor with no key behind it succeeded")
 	}
 	if called != 1 {
 		t.Errorf("the opener was reached %d times", called)
+	}
+}
+
+// ⛔ A security key factor without the credential's public key refuses, and
+// the opener is never reached: nothing could check the signature, so any
+// device that speaks CTAPHID would pass as the key (go-authn/keyfactor
+// v0.3.0, after a security audit).
+func TestASecurityKeyWithoutItsPublicKeyIsRefused(t *testing.T) {
+	asked := 0
+	swap(t, func(context.Context) (fido.Transport, error) { asked++; return nil, errors.New("no") })
+	for _, f := range []mfa.Factor{
+		SecurityKey("example.test", []byte("c"), nil),
+		VerifiedSecurityKey("example.test", []byte("c"), nil, "0000"),
+	} {
+		if err := f.Verify(context.Background()); err == nil || errors.Is(err, mfa.ErrUnavailable) {
+			t.Errorf("%s with no public key gave %v, want a refusal", f.Name(), err)
+		}
+	}
+	if asked != 0 {
+		t.Errorf("the opener was reached %d time(s)", asked)
 	}
 }

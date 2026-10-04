@@ -16,7 +16,7 @@ import (
 
 // TestOffLinuxTheFactorIsAbsentRatherThanRefusing.
 func TestOffLinuxTheFactorIsAbsent(t *testing.T) {
-	err := SecurityKey("example.test", nil).Verify(context.Background())
+	err := SecurityKey("example.test", nil, testKey).Verify(context.Background())
 	if err == nil {
 		t.Fatal("the factor succeeded off Linux")
 	}
