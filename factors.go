@@ -7,7 +7,7 @@
 //
 //	r, err := mfa.Verify(ctx, mfa.Policy{Count: 2},
 //	    somethingYouKnow,                            // yours to supply
-//	    factors.SecurityKey("example.test", credID), // this
+//	    factors.SecurityKey("example.test", credID, pubKey), // this
 //	)
 //
 // # There is one factor here, and that is the honest count
@@ -36,6 +36,7 @@ package factors
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"errors"
 
 	fido "github.com/go-authn/fido"
@@ -46,11 +47,17 @@ import (
 // SecurityKey is a registered credential on an attached key, as a factor: the
 // key must be present and a human must touch it.
 //
-// credentialID is what a registration returned. Passing none asks the key for
-// a discoverable credential, which it has only if one was registered with the
-// "rk" option.
-func SecurityKey(rpID string, credentialID []byte) mfa.Factor {
-	return keyfactor.New(open, keyfactor.Options{RPID: rpID, CredentialID: credentialID})
+// credentialID and publicKey are what a registration returned: the
+// credential's id, and the P-256 key from its attestation
+// (fido.AuthData.PublicKey). Passing no id asks the key for a discoverable
+// credential, which it has only if one was registered with the "rk" option.
+//
+// ⛔ The public key is required. Without it nothing could check the
+// assertion's signature, and any device that speaks CTAPHID -- a programmable
+// USB board -- would pass as the key (go-authn/keyfactor v0.3.0, after a
+// security audit). A factor built without one refuses when asked.
+func SecurityKey(rpID string, credentialID []byte, publicKey *ecdsa.PublicKey) mfa.Factor {
+	return keyfactor.New(open, keyfactor.Options{RPID: rpID, CredentialID: credentialID, PublicKey: publicKey})
 }
 
 // VerifiedSecurityKey is the same, with the key asked to establish who is
@@ -59,8 +66,8 @@ func SecurityKey(rpID string, credentialID []byte) mfa.Factor {
 // The kind does not change: see github.com/go-authn/keyfactor. A wrong PIN
 // costs the key a retry and a key that runs out locks, so how many are left is
 // asked for before one is spent.
-func VerifiedSecurityKey(rpID string, credentialID []byte, pin string) mfa.Factor {
-	return keyfactor.New(open, keyfactor.Options{RPID: rpID, CredentialID: credentialID, PIN: pin})
+func VerifiedSecurityKey(rpID string, credentialID []byte, publicKey *ecdsa.PublicKey, pin string) mfa.Factor {
+	return keyfactor.New(open, keyfactor.Options{RPID: rpID, CredentialID: credentialID, PublicKey: publicKey, PIN: pin})
 }
 
 // open is the seam: everything above it is portable, everything below is
